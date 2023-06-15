@@ -12,74 +12,103 @@ private const val MSDFGEN_CORNER_DOT_EPSILON = 0.000001f
  */
 private const val MSDFGEN_DECONVERGENCE_FACTOR = 0.000001f
 
-
+/**
+ * Vector shape representation.
+ */
 class Shape {
+    /**
+     * The list of contours the shape consists of.
+     */
     val contours = mutableListOf<Contour>()
+
+    /**
+     * Specifies whether the shape uses bottom-to-top (false) or top-to-bottom (true) Y coordinates.
+     */
     var inverseYAxis = false
 
+    /**
+     * Adds a contour.
+     */
     fun addContour(contour: Contour) {
         contours.add(contour)
     }
 
-    private fun deconvergeEdge(edgeHolder: EdgeHolder, param: Int) {
-        val segment = edgeHolder.get()
+    private fun MutableList<EdgeSegment>.deconvergeEdge(edgeIndex: Int, param: Int) {
+        val segment = this[edgeIndex]
         if (segment is EdgeSegment.Quadratic) {
-            edgeHolder.set(segment.convertToCubic())
+            this[edgeIndex] = segment.convertToCubic()
         } else if (segment is EdgeSegment.Cubic) {
             segment.deconverge(param, MSDFGEN_DECONVERGENCE_FACTOR)
         }
     }
 
+    /**
+     * Normalizes the shape geometry for distance field generation.
+     */
     fun normalize() {
         for (contour in contours) {
-            if (contour.edges.size == 1) {
+            val edges = contour.edges
+            if (edges.size == 1) {
                 val parts = arrayOfNulls<EdgeSegment>(3)
-                contour.edges[0].get().splitInThirds(parts)
-                contour.edges.clear()
-                contour.edges.add(EdgeHolder(parts[0]))
-                contour.edges.add(EdgeHolder(parts[1]))
-                contour.edges.add(EdgeHolder(parts[2]))
+                edges[0].splitInThirds(parts)
+                edges.clear()
+                edges.add(parts[0]!!)
+                edges.add(parts[1]!!)
+                edges.add(parts[2]!!)
             } else {
-                var prevEdge = contour.edges.last()
-                for (edge in contour.edges) {
-                    val prevDir = prevEdge.get().direction(1.0f).normalize()
-                    val curDir = edge.get().direction(0.0f).normalize()
+                var prevIndex = edges.lastIndex
+                for (i in edges.indices) {
+                    val edge = edges[i]
+                    val prevDir = edges[prevIndex].direction(1.0f).normalize()
+                    val curDir = edge.direction(0.0f).normalize()
+
                     if (dotProduct(prevDir, curDir) < MSDFGEN_CORNER_DOT_EPSILON - 1) {
-                        deconvergeEdge(prevEdge, 1)
-                        deconvergeEdge(edge, 0)
+                        edges.deconvergeEdge(prevIndex, 1)
+                            edges.deconvergeEdge(i, 0)
                     }
-                    prevEdge = edge
+                    prevIndex = i
                 }
             }
         }
     }
 
+    /**
+     * Performs basic checks to determine if the object represents a valid shape.
+     */
     fun validate(): Boolean {
         for (contour in contours) {
             if (contour.edges.isNotEmpty()) {
-                var corner = contour.edges.last().get().point(1.0f)
+                var corner = contour.edges.last().point(1.0f)
                 for (edge in contour.edges) {
-                    if (!edge) return false
-                    if (edge.get().point(0.0f) != corner) return false
-                    corner = edge.get().point(1.0f)
+                    if (edge.point(0.0f) != corner) return false
+                    corner = edge.point(1.0f)
                 }
             }
         }
         return true
     }
 
-    private fun bound(bound: Bound) {
+    /**
+     * Adjusts the bounding box to fit the shape.
+     */
+    fun bound(bound: Bound) {
         for (contour in contours) {
             contour.bound(bound)
         }
     }
 
+    /**
+     * Adjusts the bounding box to fit the shape border's mitered corners.
+     */
     fun boundMiters(bound: Bound, border: Float, miterLimit: Float, polarity: Int) {
         for (contour in contours) {
             contour.boundMitered(bound, border, miterLimit, polarity)
         }
     }
 
+    /**
+     * Computes the minimum bounding box that fits the shape, optionally with a (mitered) border.
+     */
     fun getBounds(border: Float = 0.0f, miterLimit: Float = 0.0f, polarity: Int = 0): Bound {
         val bound = Bound()
         bound(bound)
@@ -96,13 +125,16 @@ class Shape {
         return bound
     }
 
+    /**
+     * Outputs the scanline that intersects the shape at [y].
+     */
     fun scanline(line: Scanline, y: Float) {
         val intersections = mutableListOf<Scanline.Intersection>()
         val x = FloatArray(3)
         val dy = IntArray(3)
         for (contour in contours) {
             for (edge in contour.edges) {
-                val n = edge.get().scanlineIntersections(x, dy, y)
+                val n = edge.scanlineIntersections(x, dy, y)
                 for (i in 0 until n) {
                     intersections.add(Scanline.Intersection(x[i], dy[i]))
                 }
@@ -111,6 +143,9 @@ class Shape {
         line.setIntersections(intersections)
     }
 
+    /**
+     * @return the total number of edge segments
+     */
     fun edgeCount(): Int {
         var total = 0
         for (contour in contours) {
@@ -119,8 +154,13 @@ class Shape {
         return total
     }
 
+    /**
+     * Assumes its contours are unoriented (even-odd fill rule). Attempts to orient them to conform to the non-zero winding rule.
+     *
+     */
     fun orientContours() {
-        val ratio = 0.5f * (sqrt(5.0f) - 1.0f) // an irrational number to minimize the chance of intersecting a corner or other point of interest
+        val ratio =
+            0.5f * (sqrt(5.0f) - 1.0f) // an irrational number to minimize the chance of intersecting a corner or other point of interest
         val orientations = IntArray(contours.size)
         val intersections = mutableListOf<Intersection>()
 
@@ -128,17 +168,17 @@ class Shape {
             if (orientations[i] != 0 || contours[i].edges.isEmpty()) continue
 
             // Find a Y that crosses the contour
-            val y0 = contours[i].edges.first().get().point(0.0f).y
+            val y0 = contours[i].edges.first().point(0.0f).y
             var y1 = y0
 
             for (edge in contours[i].edges) {
                 if (y0 != y1) break
-                y1 = edge.get().point(1.0f).y
+                y1 = edge.point(1.0f).y
             }
 
             for (edge in contours[i].edges) {
                 if (y0 != y1) break
-                y1 = edge.get().point(ratio).y // in case all endpoints are in a horizontal line
+                y1 = edge.point(ratio).y // in case all endpoints are in a horizontal line
             }
 
             val y = mix(y0, y1, ratio)
@@ -149,7 +189,7 @@ class Shape {
 
             for (j in contours.indices) {
                 for (edge in contours[j].edges) {
-                    val n = edge.get().scanlineIntersections(x1, dy, y)
+                    val n = edge.scanlineIntersections(x1, dy, y)
                     for (k in 0 until n) {
                         val intersection = Intersection(x1[k], dy[k], j)
                         intersections.add(intersection)
@@ -183,7 +223,8 @@ class Shape {
         }
     }
 
-    private data class Intersection(val x: Float, var direction: Int, val contourIndex: Int) : Comparable<Intersection> {
+    private data class Intersection(val x: Float, var direction: Int, val contourIndex: Int) :
+        Comparable<Intersection> {
         override fun compareTo(other: Intersection): Int {
             return x.compareTo(other.x)
         }

@@ -1,6 +1,10 @@
 package dev.luna5ama.mdsfgen
 
-class ShapeDistanceFinder<DistanceType, EdgeCache: Any>(
+/**
+ * Finds the distance between a point and a Shape.
+ * [ContourCombiner] dictates the distance metric and its data type.
+ */
+class ShapeDistanceFinder<DistanceType, EdgeCache : Any>(
     private val contourCombiner: ContourCombiner<EdgeSelectorRef<DistanceType, EdgeCache>, DistanceType, EdgeCache>,
     private val shape: Shape
 ) {
@@ -25,10 +29,10 @@ class ShapeDistanceFinder<DistanceType, EdgeCache: Any>(
             if (edges.isEmpty()) continue
             val edgeSelector = contourCombiner.edgeSelector(i)
 
-            var prevEdge = (if (edges.size >= 2) edges[edges.lastIndex - 1] else edges.first()).get()
-            var curEdge = (edges.last()).get()
+            var prevEdge = (if (edges.size >= 2) edges[edges.lastIndex - 1] else edges.first())
+            var curEdge = (edges.last())
             for (j in edges.indices) {
-                val nextEdge = edges[j].get()
+                val nextEdge = edges[j]
                 edgeSelector.addEdge(shapeEdgeCache[edgeCacheIndex++], prevEdge, curEdge, nextEdge)
                 prevEdge = curEdge
                 curEdge = nextEdge
@@ -50,10 +54,10 @@ class ShapeDistanceFinder<DistanceType, EdgeCache: Any>(
             if (edges.isEmpty()) continue
             val edgeSelector = contourCombiner.edgeSelector(i)
 
-            var prevEdge = (if (edges.size >= 2) edges[edges.lastIndex - 1] else edges.first()).get()
-            var curEdge = (edges.last()).get()
+            var prevEdge = (if (edges.size >= 2) edges[edges.lastIndex - 1] else edges.first())
+            var curEdge = (edges.last())
             for (edge in edges) {
-                val nextEdge = edge.get()
+                val nextEdge = edge
                 val dummy = contourCombiner.edgeSelectorFactory.createCache()
                 edgeSelector.addEdge(dummy, prevEdge, curEdge, nextEdge)
                 prevEdge = curEdge

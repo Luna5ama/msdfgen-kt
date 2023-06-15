@@ -1,5 +1,8 @@
 package dev.luna5ama.mdsfgen
 
+/**
+ * Edge color specifies which color channels an edge belongs to.
+ */
 @JvmInline
 value class EdgeColor(val bit: Int) {
     companion object {
@@ -9,7 +12,7 @@ value class EdgeColor(val bit: Int) {
         const val YELLOW_BIT = 0b011
         const val BLUE_BIT = 0b100
         const val MAGENTA_BIT = 0b101
-        const val CYAN_BIT =  0b110
+        const val CYAN_BIT = 0b110
         const val WHITE_BIT = 0b111
 
         val BLACK = EdgeColor(BLACK_BIT)
@@ -30,6 +33,9 @@ value class EdgeColor(val bit: Int) {
 
     fun toBoolean() = bit.toBoolean()
 
+    /**
+     * Array of edge colors without boxing.
+     */
     @JvmInline
     value class Array(val array: IntArray) {
         operator fun get(index: Int) = EdgeColor(array[index])

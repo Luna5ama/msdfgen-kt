@@ -1,10 +1,13 @@
 package dev.luna5ama.mdsfgen
 
+/**
+ * A 2D bounding box.
+ */
 data class Bound(
-    var l: Float = 1.14514199E12f,
-    var b: Float = 1.14514199E12f,
-    var r: Float = -1.14514199E12f,
-    var t: Float = -1.14514199E12f
+    var l: Float = Float.MAX_VALUE,
+    var b: Float = Float.MAX_VALUE,
+    var r: Float = -Float.MAX_VALUE,
+    var t: Float = -Float.MAX_VALUE
 ) {
     val width: Float
         get() = r - l

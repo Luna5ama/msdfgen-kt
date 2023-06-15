@@ -3,6 +3,9 @@ package dev.luna5ama.mdsfgen
 import java.awt.font.GlyphVector
 import java.awt.geom.PathIterator
 
+/**
+ * Converts a [GlyphVector] to a [Shape].
+ */
 fun GlyphVector.toShape(): Shape {
     val shape = Shape()
     var contour = Contour()
@@ -25,7 +28,7 @@ fun GlyphVector.toShape(): Shape {
                 val x = coords[0]
                 val y = coords[1]
 
-                contour.addEdge(EdgeHolder(Vector2(lastX, lastY), Vector2(x, y)))
+                contour.addEdge(EdgeSegment.Linear(Vector2(lastX, lastY), Vector2(x, y)))
                 lastX = x
                 lastY = y
             }
@@ -35,7 +38,7 @@ fun GlyphVector.toShape(): Shape {
                 val x2 = coords[2]
                 val y2 = coords[3]
 
-                contour.addEdge(EdgeHolder(Vector2(lastX, lastY), Vector2(x1, y1), Vector2(x2, y2)))
+                contour.addEdge(EdgeSegment.Quadratic(Vector2(lastX, lastY), Vector2(x1, y1), Vector2(x2, y2)))
                 lastX = x2
                 lastY = y2
             }
@@ -47,7 +50,7 @@ fun GlyphVector.toShape(): Shape {
                 val x3 = coords[4]
                 val y3 = coords[5]
 
-                contour.addEdge(EdgeHolder(Vector2(lastX, lastY), Vector2(x1, y1), Vector2(x2, y2), Vector2(x3, y3)))
+                contour.addEdge(EdgeSegment.Cubic(Vector2(lastX, lastY), Vector2(x1, y1), Vector2(x2, y2), Vector2(x3, y3)))
                 lastX = x3
                 lastY = y3
             }

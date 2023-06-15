@@ -6,6 +6,7 @@ class BoxedFloat(var v: Float = 0.0f) {
         v = value
     }
 }
+
 class BoxedLong(var v: Long = 0L) {
     operator fun getValue(thisRef: Any?, property: Any?) = v
     operator fun setValue(thisRef: Any?, property: Any?, value: Long) {

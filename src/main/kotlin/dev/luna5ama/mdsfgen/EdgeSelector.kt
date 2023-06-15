@@ -347,7 +347,7 @@ sealed class MultiDistanceSelectorBase<DistanceType : MultiDistance> :
     }
 
     private val param = BoxedFloat()
-    private  val pd0 = BoxedFloat()
+    private val pd0 = BoxedFloat()
 
     override fun addEdge(
         cache: PseudoDistanceSelectorBase.EdgeCache,

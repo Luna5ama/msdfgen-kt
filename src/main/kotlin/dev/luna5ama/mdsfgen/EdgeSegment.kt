@@ -5,17 +5,49 @@ import kotlin.math.ln
 import kotlin.math.sign
 import kotlin.math.sqrt
 
+/**
+ * Parameters for iterative search of closest point on a cubic Bezier curve. Increase for higher precision.
+ */
 private const val MSDFGEN_CUBIC_SEARCH_STARTS = 4
 private const val MSDFGEN_CUBIC_SEARCH_STEPS = 4
 
+/**
+ * An abstract edge segment.
+ */
 sealed class EdgeSegment(var color: EdgeColor = EdgeColor.WHITE) {
+    /**
+     * Creates a copy of the edge segment.
+     */
     abstract fun clone(): EdgeSegment
+
+    /**
+     * @return the point on the edge specified by the parameter (between 0 and 1).
+     */
     abstract fun point(param: Float): Point2
+
+    /**
+     * @return the direction the edge has at the point specified by the parameter.
+     */
     abstract fun direction(param: Float): Vector2
+
+    /**
+     * @return the change of direction (second derivative) at the point specified by the parameter.
+     */
     abstract fun directionChange(param: Float): Vector2
+
+    /**
+     * @return the length of the edge.
+     */
     abstract fun length(): Float
+
+    /**
+     * @return the minimum signed distance between origin and the edge.
+     */
     abstract fun signedDistance(origin: Point2, param: BoxedFloat): SignedDistance
 
+    /**
+     * Converts a previously retrieved signed distance from origin to pseudo-distance.
+     */
     fun distanceToPseudoDistance(distance: SignedDistance, origin: Point2, param: Float) {
         if (param < 0) {
             val dir = direction(0.0f).normalize()
@@ -42,16 +74,34 @@ sealed class EdgeSegment(var color: EdgeColor = EdgeColor.WHITE) {
         }
     }
 
+    /**
+     * Outputs a list of (at most three) intersections (their X coordinates) with an infinite horizontal scanline at y and returns how many there are.
+     */
     abstract fun scanlineIntersections(x: FloatArray, dy: IntArray, y: Float): Int
 
+    /**
+     * Adjusts the bounding box to fit the edge segment.
+     */
     abstract fun bound(bound: Bound)
 
+    /**
+     * Reverses the edge (swaps its start point and end point).
+     */
     abstract fun reverse()
 
+    /**
+     * Moves the start point of the edge segment.
+     */
     abstract fun moveStartPoint(to: Point2)
 
+    /**
+     * Moves the end point of the edge segment.
+     */
     abstract fun moveEndPoint(to: Point2)
 
+    /**
+     * Splits the edge segments into thirds which together represent the original edge.
+     */
     abstract fun splitInThirds(
         parts: Array<EdgeSegment?>,
         i1: Int = 0,
@@ -59,9 +109,12 @@ sealed class EdgeSegment(var color: EdgeColor = EdgeColor.WHITE) {
         i3: Int = 2,
     )
 
+    /**
+     * A line segment.
+     */
     class Linear(p0: Point2, p1: Point2, edgeColor: EdgeColor = EdgeColor.WHITE) :
         EdgeSegment(edgeColor) {
-        val p = arrayOf(p0, p1)
+        val p = Vector2.Array.of(p0, p1)
 
         override fun clone(): Linear {
             return Linear(p[0], p[1], color)
@@ -142,8 +195,12 @@ sealed class EdgeSegment(var color: EdgeColor = EdgeColor.WHITE) {
         }
     }
 
-    class Quadratic(p0: Point2, p1: Point2, p2: Point2, edgeColor: EdgeColor = EdgeColor.WHITE) : EdgeSegment(edgeColor) {
-        val p = arrayOf(p0, p1, p2)
+    /**
+     * A quadratic Bezier curve.
+     */
+    class Quadratic(p0: Point2, p1: Point2, p2: Point2, edgeColor: EdgeColor = EdgeColor.WHITE) :
+        EdgeSegment(edgeColor) {
+        val p = Vector2.Array.of(p0, p1, p2)
 
         init {
             if (p[1] == p[0] || p[1] == p[2]) {
@@ -342,7 +399,12 @@ sealed class EdgeSegment(var color: EdgeColor = EdgeColor.WHITE) {
             i3: Int
         ) {
             parts[i1] = Quadratic(p[0], mix(p[0], p[1], 1 / 3.0f), point(1 / 3.0f), color)
-            parts[i2] = Quadratic(point(1 / 3.0f), mix(mix(p[0], p[1], 5 / 9.0f), mix(p[1], p[2], 4 / 9.0f), 0.5f), point(2 / 3.0f), color)
+            parts[i2] = Quadratic(
+                point(1 / 3.0f),
+                mix(mix(p[0], p[1], 5 / 9.0f), mix(p[1], p[2], 4 / 9.0f), 0.5f),
+                point(2 / 3.0f),
+                color
+            )
             parts[i3] = Quadratic(point(2 / 3.0f), mix(p[1], p[2], 2 / 3.0f), p[2], color)
         }
 
@@ -351,9 +413,12 @@ sealed class EdgeSegment(var color: EdgeColor = EdgeColor.WHITE) {
         }
     }
 
+    /**
+     * A cubic Bezier curve.
+     */
     class Cubic(p0: Point2, p1: Point2, p2: Point2, p3: Point2, edgeColor: EdgeColor = EdgeColor.WHITE) :
         EdgeSegment(edgeColor) {
-        val p = arrayOf(p0, p1, p2, p3)
+        val p = Vector2.Array.of(p0, p1, p2, p3)
 
         init {
             if ((p[1] == p[0] || p[1] == p[3]) && (p[2] == p[0] || p[2] == p[3])) {

@@ -50,6 +50,9 @@ sealed class ContourCombiner<EdgeSelector : EdgeSelectorRef<DistanceType, EdgeCa
     abstract fun newInstance(shape: Shape): ContourCombiner<EdgeSelector, DistanceType, EdgeCache>
 }
 
+/**
+ * Simply selects the nearest contour.
+ */
 class SimpleContourCombiner<EdgeSelector : EdgeSelectorRef<DistanceType, EdgeCache>, DistanceType, EdgeCache : Any>
     (edgeSelectorClass: Class<EdgeSelector>, shape: Shape) :
     ContourCombiner<EdgeSelector, DistanceType, EdgeCache>(edgeSelectorClass) {
@@ -81,6 +84,9 @@ class SimpleContourCombiner<EdgeSelector : EdgeSelectorRef<DistanceType, EdgeCac
     }
 }
 
+/**
+ * Selects the nearest contour that actually forms a border between filled and unfilled area.
+ */
 class OverlappingContourCombiner<EdgeSelector : EdgeSelectorRef<DistanceType, EdgeCache>, DistanceType, EdgeCache : Any>
     (edgeSelectorClass: Class<EdgeSelector>, shape: Shape) :
     ContourCombiner<EdgeSelector, DistanceType, EdgeCache>(edgeSelectorClass) {

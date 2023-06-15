@@ -38,7 +38,7 @@ fun solveCubicNormed(x: FloatArray, aIn: Float, b: Float, c: Float): Int {
 
     val a2 = a * a
     var q = 1 / 9.0f * (a2 - 3.0f * b)
-    val r = 1 / 54.0f * (a * (2.0f * a2 - 9.0f* b) + 27.0f * c)
+    val r = 1 / 54.0f * (a * (2.0f * a2 - 9.0f * b) + 27.0f * c)
     val r2 = r * r
     val q3 = q * q * q
     a *= 1.0f / 3.0f

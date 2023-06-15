@@ -91,7 +91,7 @@ object MsdfGen {
                 var minDistance = SignedDistance()
                 for (contour in shape.contours) {
                     for (edge in contour.edges) {
-                        val distance = edge.get().signedDistance(p, dummy)
+                        val distance = edge.signedDistance(p, dummy)
                         if (distance < minDistance) {
                             minDistance = distance
                         }
@@ -118,8 +118,7 @@ object MsdfGen {
                 val b = Temp()
 
                 for (contour in shape.contours) {
-                    for (edgeHolder in contour.edges) {
-                        val edge = edgeHolder.get()
+                    for (edge in contour.edges) {
                         val param = BoxedFloat()
                         val distance = edge.signedDistance(p, param)
                         if ((edge.color and EdgeColor.RED).toBoolean() && distance < r.minDistance) {

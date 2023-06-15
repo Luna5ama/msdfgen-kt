@@ -2,7 +2,10 @@ package dev.luna5ama.mdsfgen
 
 import java.awt.image.BufferedImage
 
-fun interface  MapPixelFunction {
+/**
+ * A function that maps a float value to a byte value.
+ */
+fun interface MapPixelFunction {
     fun map(value: Float): Float
 
     operator fun invoke(value: Float): Byte {
@@ -10,6 +13,9 @@ fun interface  MapPixelFunction {
     }
 }
 
+/**
+ * Converts the output data to a buffered image.
+ */
 fun MsdfGen.OutputData<*>.toBufferedImage(mapFunc: MapPixelFunction): BufferedImage {
     return when (this.channels) {
         1 -> {
