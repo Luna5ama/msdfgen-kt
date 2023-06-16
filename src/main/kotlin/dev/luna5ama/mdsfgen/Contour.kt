@@ -2,6 +2,7 @@ package dev.luna5ama.mdsfgen
 
 import kotlin.math.min
 import kotlin.math.sign
+import kotlin.math.sqrt
 
 private fun boundPoints(bound: Bound, p: Point2) {
     if (p.x < bound.l) bound.l = p.x
@@ -47,7 +48,7 @@ class Contour {
             if (polarity * crossProduct(prevDir, dir) >= 0.0f) {
                 var miterLength = miterLimit
                 val q = 0.5f * (1.0f - dotProduct(prevDir, dir))
-                if (q > 0) miterLength = min(fastInvSqrt(q), miterLimit)
+                if (q > 0) miterLength = min(1.0f / sqrt(q), miterLimit)
                 val miter = edge.point(0.0f) + border * miterLength * (prevDir + dir).normalize(true)
                 boundPoints(bound, miter)
             }

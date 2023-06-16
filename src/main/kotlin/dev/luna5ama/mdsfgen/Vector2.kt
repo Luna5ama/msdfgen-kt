@@ -31,7 +31,7 @@ value class Vector2(val bits: Long) {
      * @return the inverse of vector's length.
      */
     fun invLength(): Float {
-        return fastInvSqrt(x * x + y * y)
+        return 1.0f / sqrt(x * x + y * y)
     }
 
     /**

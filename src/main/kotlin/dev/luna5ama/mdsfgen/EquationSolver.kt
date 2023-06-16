@@ -44,7 +44,7 @@ fun solveCubicNormed(x: FloatArray, aIn: Float, b: Float, c: Float): Int {
     a *= 1.0f / 3.0f
 
     if (r2 < q3) {
-        var t = r * fastInvSqrt(q3)
+        var t = r * (1.0f / sqrt(q3))
         if (t < -1) t = -1.0f
         if (t > 1) t = 1.0f
         t = fastACos(t)

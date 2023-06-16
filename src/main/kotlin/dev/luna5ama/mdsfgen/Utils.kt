@@ -64,18 +64,6 @@ fun median(a: Float, b: Float, c: Float): Float {
     }
 }
 
-/**
- * Fast approximation of 1/sqrt(x) from Quake.
- */
-fun fastInvSqrt(x: Float): Float {
-    val xhalf = 0.5f * x
-    var i = x.toRawBits()
-    i = 0x5f3759df - (i shr 1)
-    var y = Float.fromBits(i)
-    y *= 1.5f - xhalf * y * y
-    return y
-}
-
 private val acosTable = FloatArray(ACOS_TABLE_SIZE + 1) {
     acos(min(it / ACOS_TABLE_SIZE.toFloat(), 1.0f))
 }
@@ -89,23 +77,22 @@ private val acosTable = FloatArray(ACOS_TABLE_SIZE + 1) {
 fun fastACos(x: Float): Float {
     if (x.isNaN() || x < -1.0 || x > 1.0) return Float.NaN
 
-    when (x) {
-        0.0f -> return HALF_PI_F
-        1.0f -> return 0.0f
-        -1.0f -> return PI_F
+    return when (x) {
+        0.0f -> HALF_PI_F
+        1.0f -> 0.0f
+        -1.0f -> PI_F
         else -> {
             if (x > 0.0f) {
                 val f = x * ACOS_TABLE_SIZE
                 val index = f.toInt()
                 val delta = f - index
-                return mix(acosTable[index], acosTable[index + 1], delta)
+                mix(acosTable[index], acosTable[index + 1], delta)
             } else {
                 val f = -x * ACOS_TABLE_SIZE
                 val index = f.toInt()
                 val delta = f - index
-                return PI_F - mix(acosTable[index], acosTable[index + 1], delta)
+                PI_F - mix(acosTable[index], acosTable[index + 1], delta)
             }
         }
     }
-
 }

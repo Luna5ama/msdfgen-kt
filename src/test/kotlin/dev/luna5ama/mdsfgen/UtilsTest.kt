@@ -45,22 +45,6 @@ class UtilsTest {
     }
 
     @Test
-    fun fastInvSqrtTest() {
-        fun test(i: Float) {
-            assertEquals(1.0f / sqrt(i), fastInvSqrt(i), EPSILON)
-        }
-
-        test(1.0f)
-        test(2.0f)
-        test(3.0f)
-        test(4.0f)
-        test(5.0f)
-        test(6.0f)
-        test(7.0f)
-        test(8.0f)
-    }
-
-    @Test
     fun fastACosTest() {
         fun test(i: Float) {
             val e = acos(i)
