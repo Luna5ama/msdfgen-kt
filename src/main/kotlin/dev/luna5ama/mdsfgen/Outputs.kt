@@ -9,7 +9,7 @@ fun interface MapPixelFunction {
     fun map(value: Float): Float
 
     operator fun invoke(value: Float): Byte {
-        return map(value * 255.0f).toInt().coerceIn(0, 255).toByte()
+        return (map(value) * 255.0f).toInt().coerceIn(0, 255).toByte()
     }
 }
 
@@ -50,10 +50,10 @@ fun MsdfGen.OutputData<*>.toBufferedImage(mapFunc: MapPixelFunction): BufferedIm
             val data = ByteArray(4)
             for (y in 0 until this.height) {
                 for (x in 0 until this.width) {
-                    data[0] = mapFunc(this[x, y, 3])
-                    data[1] = mapFunc(this[x, y, 2])
-                    data[2] = mapFunc(this[x, y, 1])
-                    data[3] = mapFunc(this[x, y, 0])
+                    data[0] = mapFunc(this[x, y, 0])
+                    data[1] = mapFunc(this[x, y, 1])
+                    data[2] = mapFunc(this[x, y, 2])
+                    data[3] = mapFunc(this[x, y, 3])
                     raster.setDataElements(x, y, data)
                 }
             }

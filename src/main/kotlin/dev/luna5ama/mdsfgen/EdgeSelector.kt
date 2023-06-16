@@ -50,7 +50,7 @@ sealed interface EdgeSelector<Self, DistanceType, EdgeCache : Any> {
             return when (DistanceType::class.java) {
                 BoxedFloat::class.java -> TrueDistanceSelector::class.java
                 MultiDistance::class.java -> MultiDistanceSelector::class.java
-                MultiAndTrueDistance::class.java -> MultiDistanceSelector::class.java
+                MultiAndTrueDistance::class.java -> MultiAndTrueDistanceSelector::class.java
                 else -> throw IllegalArgumentException("Unsupported distance type: ${DistanceType::class.java}")
             } as Class<EdgeSelectorRef<DistanceType, Any>>
         }

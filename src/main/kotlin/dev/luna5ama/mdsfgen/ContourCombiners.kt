@@ -10,6 +10,10 @@ private fun initDistanceMulti(): MultiDistance {
     return MultiDistance(-Float.MAX_VALUE, -Float.MAX_VALUE, -Float.MAX_VALUE)
 }
 
+private fun initDistanceMultiAndTrue(): MultiDistance {
+    return MultiAndTrueDistance(-Float.MAX_VALUE, -Float.MAX_VALUE, -Float.MAX_VALUE)
+}
+
 private fun resolveDistanceSingle(distance: BoxedFloat): Float {
     return distance.v
 }
@@ -25,8 +29,11 @@ sealed class ContourCombiner<EdgeSelector : EdgeSelectorRef<DistanceType, EdgeCa
     val edgeSelectorFactory =
         edgeSelectorClass.getDeclaredField("Companion")[null] as EdgeSelectorFactory<EdgeSelector, DistanceType, EdgeCache>
     private val initDistance0 =
-        (if (edgeSelectorFactory.distanceType == BoxedFloat::class.java) ::initDistanceSingle
-        else ::initDistanceMulti) as () -> DistanceType
+        (when (edgeSelectorFactory.distanceType) {
+            BoxedFloat::class.java -> ::initDistanceSingle
+            MultiDistance::class.java -> ::initDistanceMulti
+            else -> ::initDistanceMultiAndTrue
+        }) as () -> DistanceType
     private val resolveDistance0 =
         (if (edgeSelectorFactory.distanceType == BoxedFloat::class.java) ::resolveDistanceSingle
         else ::resolveDistanceMulti) as (DistanceType) -> Float
